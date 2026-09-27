@@ -1,0 +1,396 @@
+<!-- SUB-VIEW 5: REKAPITULASI JENIS JABATAN (STRUKTURAL, FUNGSIONAL, PELAKSANA) -->
+<div id="subview-rekap-jenis-jabatan" style="display: none;">
+  <!-- KPI Metrics Ringkasan 3 Jenis Jabatan -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-title">Total Seluruh ASN</span>
+      <span class="kpi-value" id="rekap-jab-total-all">0</span>
+      <span class="kpi-subtext">44 OPD & Kecamatan se-Kabupaten Toba</span>
+    </div>
+    <div class="kpi-card purple">
+      <span class="kpi-title">Jabatan Struktural</span>
+      <span class="kpi-value" id="rekap-jab-sum-struktural">0</span>
+      <span class="kpi-subtext" id="rekap-jab-pct-struktural">Pejabat Manajerial / Eselon</span>
+    </div>
+    <div class="kpi-card cyan">
+      <span class="kpi-title">Jabatan Fungsional (JF)</span>
+      <span class="kpi-value" id="rekap-jab-sum-fungsional">0</span>
+      <span class="kpi-subtext" id="rekap-jab-pct-fungsional">Tenaga Keahlian & Keterampilan</span>
+    </div>
+    <div class="kpi-card amber">
+      <span class="kpi-title">Jabatan Pelaksana</span>
+      <span class="kpi-value" id="rekap-jab-sum-pelaksana">0</span>
+      <span class="kpi-subtext" id="rekap-jab-pct-pelaksana">Staf Administrasi & Teknis</span>
+    </div>
+  </div>
+
+  <!-- ZettBOT Idea Widget: Peta Distribusi Jenjang Jabatan Fungsional (Keahlian vs Keterampilan) -->
+  <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+        <span>🎯 Peta Jenjang Karier Jabatan Fungsional (JF) Pemkab Toba</span>
+        <span class="badge badge-info" id="badge-jf-grand-total">Total: 0 JF</span>
+      </div>
+      <span style="font-size: 0.75rem; color: var(--text-dim); font-style: italic;">
+        Identifikasi Kategori Keahlian (Akademik) & Keterampilan (Vokasi)
+      </span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+      <!-- Blok 1: Kategori Keahlian -->
+      <div style="background: rgba(2, 132, 199, 0.04); border: 1px solid rgba(2, 132, 199, 0.18); border-radius: 10px; padding: 0.95rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; border-bottom: 1px solid rgba(2, 132, 199, 0.15); padding-bottom: 0.4rem;">
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase;">🎓 Kategori Keahlian</span>
+          <span class="badge badge-info" id="jf-total-keahlian-badge">0 Pegawai</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.825rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">• JF Ahli Utama:</span>
+            <b id="jf-cnt-utama" style="color: var(--text-main);">0</b>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">• JF Ahli Madya:</span>
+            <b id="jf-cnt-madya" style="color: var(--text-main);">0</b>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">• JF Ahli Muda:</span>
+            <b id="jf-cnt-muda" style="color: var(--text-main);">0</b>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">• JF Ahli Pertama:</span>
+            <b id="jf-cnt-pertama" style="color: var(--text-main);">0</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- Blok 2: Kategori Keterampilan / Vokasi -->
+      <div style="background: rgba(217, 119, 6, 0.04); border: 1px solid rgba(217, 119, 6, 0.18); border-radius: 10px; padding: 0.95rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem; border-bottom: 1px solid rgba(217, 119, 6, 0.15); padding-bottom: 0.4rem;">
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--accent-amber); text-transform: uppercase;">🛠️ Kategori Keterampilan</span>
+          <span class="badge badge-warning" id="jf-total-keterampilan-badge">0 Pegawai</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.45rem; font-size: 0.825rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">• JF Penyelia:</span>
+            <b id="jf-cnt-penyelia" style="color: var(--text-main);">0</b>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">• JF Mahir / Pelaksana Lanjutan:</span>
+            <b id="jf-cnt-mahir" style="color: var(--text-main);">0</b>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">• JF Terampil / Pelaksana:</span>
+            <b id="jf-cnt-terampil" style="color: var(--text-main);">0</b>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-muted);">• JF Pemula:</span>
+            <b id="jf-cnt-pemula" style="color: var(--text-main);">0</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action, Filter & Export Bar -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <span style="font-size: 0.875rem; font-weight: 700; color: var(--text-main);">💼 Matriks Sebaran Jenis Jabatan ASN </span>
+      <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+        <label style="font-size: 0.75rem; color: var(--text-muted);">Status ASN:</label>
+        <select id="rekap-jab-filter-asn" class="form-control" style="padding: 0.35rem 0.6rem; font-size: 0.775rem;" onchange="onJenisJabatanFilterAsnChange()">
+          <option value="ALL">Semua Status ASN (PNS + PPPK)</option>
+          <option value="PNS">Hanya PNS</option>
+          <option value="PPPK">Hanya PPPK Penuh Waktu</option>
+          <option value="PPPK_PARUH_WAKTU">Hanya PPPK Paruh Waktu</option>
+        </select>
+      </div>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <button class="btn btn-ghost" id="btn-export-jab-excel" onclick="exportRekapJenisJabatanExcel()">
+        📊 <span>Export Excel (.xls)</span>
+      </button>
+      <button class="btn btn-accent" id="btn-export-jab-pdf" onclick="exportRekapJenisJabatanPdf()">
+        📄 <span>Export PDF Resmi (Landscape)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabel Matriks 44 OPD (Struktural, Fungsional, Pelaksana) -->
+  <div class="table-responsive">
+    <table class="custom-table" id="table-rekap-jenis-jabatan">
+      <thead>
+        <tr>
+          <th style="width: 40px; vertical-align: middle;">No</th>
+          <th style="vertical-align: middle;">Nama Perangkat Daerah / Instansi</th>
+          <th style="width: 130px; text-align: right; color: var(--accent-purple);">Struktural</th>
+          <th style="width: 130px; text-align: right; color: var(--accent-cyan);">Fungsional</th>
+          <th style="width: 130px; text-align: right; color: var(--accent-amber);">Pelaksana</th>
+          <th style="width: 140px; text-align: right; background: rgba(0, 255, 170, 0.1); color: var(--accent);">Total Pegawai</th>
+        </tr>
+      </thead>
+      <tbody id="rekap-jab-tbody">
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+            Menghitung sebaran jenis jabatan di 44 Perangkat Daerah...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  /**
+   * Helper Client-Side Sanitizer:
+   * Mengunci tampilan nama OPD di browser agar selalu menampilkan nama resmi terbaru:
+   * "Badan Perencanaan Pembangunan, Riset dan Inovasi Daerah"
+   */
+  function cleanRekapJabatanOpdName(raw) {
+    if (!raw) return '';
+    var text = String(raw).trim();
+    var upper = text.toUpperCase();
+
+    if (
+      upper.indexOf("PERENCANAAN PEMBANGUNAN") !== -1 ||
+      upper.indexOf("PENELITIAN DAN PENGEMBANGAN") !== -1 ||
+      upper.indexOf("PENELITIAN") !== -1 ||
+      upper.indexOf("RISET DAN INOVASI") !== -1 ||
+      upper.indexOf("BAPPEDA") !== -1 ||
+      upper.indexOf("BAPPERIDA") !== -1 ||
+      upper.indexOf("BAPELITBANGDA") !== -1
+    ) {
+      if (upper.indexOf("SEKRETARIAT DAERAH") === -1 && upper.indexOf("SETDA") === -1) {
+        return "Badan Perencanaan Pembangunan, Riset dan Inovasi Daerah";
+      }
+    }
+    return text;
+  }
+
+  function loadRekapJenisJabatanData() {
+    var filterAsn = document.getElementById('rekap-jab-filter-asn') ? document.getElementById('rekap-jab-filter-asn').value : 'ALL';
+    
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          renderRekapJenisJabatanTable(res);
+        })
+        .withFailureHandler(function(err) {
+          showToast('Gagal memuat rekap jenis jabatan: ' + err.toString(), 'error');
+        })
+        .getRekapJenisJabatanData(filterAsn);
+    } else {
+      // Safe Preview Mode Fallback
+      renderMockRekapJenisJabatan();
+    }
+  }
+
+  function onJenisJabatanFilterAsnChange() {
+    loadRekapJenisJabatanData();
+  }
+
+  function renderRekapJenisJabatanTable(res) {
+    var tbody = document.getElementById('rekap-jab-tbody');
+    if (!res || !res.success) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--accent-rose);">Gagal memuat data sebaran jenis jabatan.</td></tr>';
+      return;
+    }
+
+    var t = res.totals || {};
+    var jf = t.jf_levels || {};
+
+    // 1. Update Top KPI Metrics
+    var elTotal = document.getElementById('rekap-jab-total-all');
+    var elStruktural = document.getElementById('rekap-jab-sum-struktural');
+    var elFungsional = document.getElementById('rekap-jab-sum-fungsional');
+    var elPelaksana = document.getElementById('rekap-jab-sum-pelaksana');
+
+    var totAll = t.total_all || 0;
+    var totStr = t.struktural || 0;
+    var totFung = t.fungsional || 0;
+    var totPel = t.pelaksana || 0;
+
+    if (elTotal) elTotal.innerText = Number(totAll).toLocaleString('id-ID');
+    if (elStruktural) elStruktural.innerText = Number(totStr).toLocaleString('id-ID');
+    if (elFungsional) elFungsional.innerText = Number(totFung).toLocaleString('id-ID');
+    if (elPelaksana) elPelaksana.innerText = Number(totPel).toLocaleString('id-ID');
+
+    // Subtext persentase
+    var pStr = totAll > 0 ? ((totStr / totAll) * 100).toFixed(1) : '0';
+    var pFung = totAll > 0 ? ((totFung / totAll) * 100).toFixed(1) : '0';
+    var pPel = totAll > 0 ? ((totPel / totAll) * 100).toFixed(1) : '0';
+
+    var elPStr = document.getElementById('rekap-jab-pct-struktural');
+    var elPFung = document.getElementById('rekap-jab-pct-fungsional');
+    var elPPel = document.getElementById('rekap-jab-pct-pelaksana');
+
+    if (elPStr) elPStr.innerText = pStr + '% dari Total ASN';
+    if (elPFung) elPFung.innerText = pFung + '% dari Total ASN';
+    if (elPPel) elPPel.innerText = pPel + '% dari Total ASN';
+
+    // 2. Update ZettBOT Idea Widget: Jenjang Karier JF
+    var grandJf = (jf.total_keahlian || 0) + (jf.total_keterampilan || 0);
+    var elBadgeGrand = document.getElementById('badge-jf-grand-total');
+    if (elBadgeGrand) elBadgeGrand.innerText = 'Total: ' + Number(grandJf).toLocaleString('id-ID') + ' JF';
+
+    var elBadgeKeahlian = document.getElementById('jf-total-keahlian-badge');
+    var elBadgeKeterampilan = document.getElementById('jf-total-keterampilan-badge');
+    if (elBadgeKeahlian) elBadgeKeahlian.innerText = Number(jf.total_keahlian || 0).toLocaleString('id-ID') + ' Pegawai';
+    if (elBadgeKeterampilan) elBadgeKeterampilan.innerText = Number(jf.total_keterampilan || 0).toLocaleString('id-ID') + ' Pegawai';
+
+    // Rincian angka per jenjang
+    var setEl = function(id, val) {
+      var elem = document.getElementById(id);
+      if (elem) elem.innerText = Number(val || 0).toLocaleString('id-ID');
+    };
+
+    setEl('jf-cnt-utama', jf.utama);
+    setEl('jf-cnt-madya', jf.madya);
+    setEl('jf-cnt-muda', jf.muda);
+    setEl('jf-cnt-pertama', jf.pertama);
+
+    setEl('jf-cnt-penyelia', jf.penyelia);
+    setEl('jf-cnt-mahir', jf.mahir);
+    setEl('jf-cnt-terampil', jf.terampil);
+    setEl('jf-cnt-pemula', jf.pemula);
+
+    // 3. Render Baris Tabel Matriks 44 OPD
+    var rows = res.data || [];
+    var html = '';
+
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var displayName = cleanRekapJabatanOpdName(r.nama);
+      var isRsud = displayName === 'RSUD Porsea';
+      var rowStyle = isRsud ? 'style="background: rgba(6, 182, 212, 0.05);"' : '';
+
+      html += '<tr ' + rowStyle + '>' +
+        '<td>' + (r.no || '-') + '</td>' +
+        '<td style="font-weight:600;">' + displayName + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--accent-purple);font-weight:600;">' + (r.struktural || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--accent-cyan);font-weight:600;">' + (r.fungsional || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--accent-amber);font-weight:600;">' + (r.pelaksana || '-') + '</td>' +
+        '<td style="text-align:right;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;background:rgba(0,255,170,0.05);">' + (r.jumlah || 0) + '</td>' +
+      '</tr>';
+    }
+
+    // Baris Grand Total Akumulasi
+    html += '<tr style="background:var(--bg-main);font-weight:800;border-top:2px solid var(--accent);">' +
+      '<td colspan="2" style="text-align:center;color:var(--accent);">TOTAL KESELURUHAN PEMKAB TOBA</td>' +
+      '<td style="text-align:right;color:var(--accent-purple);">' + Number(t.struktural || 0).toLocaleString('id-ID') + '</td>' +
+      '<td style="text-align:right;color:var(--accent-cyan);">' + Number(t.fungsional || 0).toLocaleString('id-ID') + '</td>' +
+      '<td style="text-align:right;color:var(--accent-amber);">' + Number(t.pelaksana || 0).toLocaleString('id-ID') + '</td>' +
+      '<td style="text-align:right;color:var(--accent);font-size:1.05rem;">' + Number(t.total_all || 0).toLocaleString('id-ID') + '</td>' +
+    '</tr>';
+
+    if (tbody) tbody.innerHTML = html;
+  }
+
+  function exportRekapJenisJabatanPdf() {
+    var filterAsn = document.getElementById('rekap-jab-filter-asn') ? document.getElementById('rekap-jab-filter-asn').value : 'ALL';
+    var btn = document.getElementById('btn-export-jab-pdf');
+    var originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ <span>Menyiapkan PDF...</span>';
+    showToast('Membuat dokumen PDF matriks sebaran jenis jabatan...', 'info');
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+          if (res && res.success && res.base64) {
+            downloadBase64File(res.base64, res.filename || 'Rekapitulasi_Jenis_Jabatan_ASN_Toba.pdf', 'application/pdf');
+            showToast('Dokumen PDF Jenis Jabatan berhasil diunduh!', 'success');
+          } else {
+            showToast('Gagal generate PDF: ' + ((res && res.error) || 'Unknown error'), 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+          showToast('Error PDF: ' + err.toString(), 'error');
+        })
+        .generateRekapJenisJabatanPDF(filterAsn);
+    } else {
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        showToast('Mode Preview: Fitur export aktif di Google Apps Script runtime.', 'info');
+      }, 800);
+    }
+  }
+
+  function exportRekapJenisJabatanExcel() {
+    var filterAsn = document.getElementById('rekap-jab-filter-asn') ? document.getElementById('rekap-jab-filter-asn').value : 'ALL';
+    var btn = document.getElementById('btn-export-jab-excel');
+    var originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ <span>Menyiapkan Excel...</span>';
+    showToast('Menyusun berkas Excel matriks jenis jabatan...', 'info');
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+          if (res && res.success && res.base64) {
+            downloadBase64File(res.base64, res.filename || 'Rekapitulasi_Jenis_Jabatan_ASN_Toba.xls', 'application/vnd.ms-excel');
+            showToast('Berkas Excel Jenis Jabatan berhasil diunduh!', 'success');
+          } else {
+            showToast('Gagal generate Excel: ' + ((res && res.error) || 'Unknown error'), 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+          showToast('Error Excel: ' + err.toString(), 'error');
+        })
+        .generateRekapJenisJabatanExcel(filterAsn);
+    } else {
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        showToast('Mode Preview: Fitur export aktif di Google Apps Script runtime.', 'info');
+      }, 800);
+    }
+  }
+
+  function renderMockRekapJenisJabatan() {
+    var mockData = {
+      success: true,
+      totals: {
+        struktural: 184,
+        fungsional: 2150,
+        pelaksana: 627,
+        total_all: 2961,
+        jf_levels: {
+          utama: 2,
+          madya: 114,
+          muda: 680,
+          pertama: 924,
+          penyelia: 142,
+          mahir: 188,
+          terampil: 95,
+          pemula: 5,
+          total_keahlian: 1720,
+          total_keterampilan: 430
+        }
+      },
+      data: [
+        { no: 1, nama: 'Sekretariat Daerah Kabupaten', struktural: 18, fungsional: 32, pelaksana: 46, jumlah: 96 },
+        { no: 2, nama: 'Dinas Pendidikan, Pemuda dan Olahraga', struktural: 12, fungsional: 1080, pelaksana: 43, jumlah: 1135 },
+        { no: 3, nama: 'Dinas Kesehatan', struktural: 10, fungsional: 615, pelaksana: 33, jumlah: 658 },
+        { no: '', nama: 'RSUD Porsea', struktural: 6, fungsional: 112, pelaksana: 20, jumlah: 138 },
+        { no: 22, nama: 'Badan Perencanaan Pembangunan, Riset dan Inovasi Daerah', struktural: 8, fungsional: 14, pelaksana: 6, jumlah: 28 }
+      ]
+    };
+    renderRekapJenisJabatanTable(mockData);
+  }
+
+  // Daftarkan fungsi ke window global untuk keandalan eksekusi event listener
+  window.cleanRekapJabatanOpdName = cleanRekapJabatanOpdName;
+  window.loadRekapJenisJabatanData = loadRekapJenisJabatanData;
+  window.onJenisJabatanFilterAsnChange = onJenisJabatanFilterAsnChange;
+  window.exportRekapJenisJabatanPdf = exportRekapJenisJabatanPdf;
+  window.exportRekapJenisJabatanExcel = exportRekapJenisJabatanExcel;
+</script>

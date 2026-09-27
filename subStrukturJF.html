@@ -1,0 +1,561 @@
+<!-- ========================================================================= -->
+<!-- SUB-VIEW 2: BEZETTING & GAP ANALYSIS JABATAN FUNGSIONAL (JF) -->
+<!-- ========================================================================= -->
+<div id="subview-bezetting-jf" style="display: none;">
+  <!-- KPI Cards Bezetting JF -->
+  <div class="kpi-grid">
+    <div class="kpi-card cyan">
+      <span class="kpi-title">Total Bezetting Riil JF</span>
+      <span class="kpi-value" id="kpi-jf-total">0</span>
+      <span class="kpi-subtext">PNS & PPPK Aktif Terdata</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-title">Kebutuhan Formasi ABK</span>
+      <span class="kpi-value" id="kpi-jf-kebutuhan">0</span>
+      <span class="kpi-subtext">Target Kebutuhan Ideal Daerah</span>
+    </div>
+    <div class="kpi-card rose">
+      <span class="kpi-title">Jabatan Kurang (Defisit)</span>
+      <span class="kpi-value" id="kpi-jf-defisit">0</span>
+      <span class="kpi-subtext" id="kpi-jf-defisit-sub">Kekurangan Tenaga JF</span>
+    </div>
+    <div class="kpi-card amber">
+      <span class="kpi-title">Jabatan Surplus (Lebih)</span>
+      <span class="kpi-value" id="kpi-jf-surplus">0</span>
+      <span class="kpi-subtext">Bezetting Melebihi ABK</span>
+    </div>
+  </div>
+
+  <!-- Filter & Pencarian Bezetting JF -->
+  <div class="filter-panel">
+    <div class="filter-row">
+      <div class="form-group" style="grid-column: span 2;">
+        <label class="form-label">Pencarian Jabatan JF / Pegawai</label>
+        <input type="text" id="filter-jf-search" class="form-control" placeholder="Ketik Jabatan JF (cth: Guru, Dokter, Pranata...), NIP, atau Nama..." oninput="onJfFilterChange()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Status Formasi ABK</label>
+        <select id="filter-jf-status-kebutuhan" class="form-control" onchange="onJfFilterChange()">
+          <option value="ALL">Semua Status Formasi</option>
+          <option value="DEFISIT">🔴 Hanya Kurang / Defisit</option>
+          <option value="IDEAL">🟢 Hanya Ideal (Sesuai)</option>
+          <option value="SURPLUS">🟡 Hanya Surplus (Lebih)</option>
+          <option value="BELUM_DIATUR">⚪ Belum Diatur Kebutuhan</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Kategori JF</label>
+        <select id="filter-jf-kategori" class="form-control" onchange="onJfFilterChange()">
+          <option value="ALL">Semua Kategori</option>
+          <option value="KEAHLIAN">JF Keahlian</option>
+          <option value="KETERAMPILAN">JF Keterampilan / Vokasi</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Jenjang Jabatan</label>
+        <select id="filter-jf-jenjang" class="form-control" onchange="onJfFilterChange()">
+          <option value="ALL">Semua Jenjang</option>
+          <option value="Ahli Utama">Ahli Utama</option>
+          <option value="Ahli Madya">Ahli Madya</option>
+          <option value="Ahli Muda">Ahli Muda</option>
+          <option value="Ahli Pertama">Ahli Pertama</option>
+          <option value="Penyelia">Penyelia</option>
+          <option value="Mahir">Mahir</option>
+          <option value="Terampil">Terampil</option>
+          <option value="Pemula">Pemula</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Perangkat Daerah</label>
+        <select id="filter-jf-opd" class="form-control" onchange="onJfFilterChange()">
+          <option value="ALL">Semua Perangkat Daerah</option>
+        </select>
+      </div>
+    </div>
+    <!-- Baris Tombol Aksi & Fitur Input Formasi ABK Cepat -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem;">
+      <button type="button" class="btn btn-accent admin-only-btn" onclick="onTambahAbkHeaderClick()" style="align-items: center; gap: 0.35rem; box-shadow: 0 4px 12px rgba(0, 255, 170, 0.2);">
+        <span>➕</span> <span>Tambah / Sesuaikan Formasi ABK</span>
+      </button>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button type="button" class="btn btn-ghost" onclick="resetJfFilter()">🔄 Reset Filter</button>
+        <button type="button" class="btn btn-accent" id="btn-export-jf-excel" onclick="exportBezettingJfExcel()">📊 Export Bezetting & Gap JF (.xls)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabel Bezetting & Gap Analysis JF -->
+  <div class="table-responsive">
+    <table class="custom-table" id="table-bezetting-jf">
+      <thead>
+        <tr>
+          <th style="width: 40px;">No</th>
+          <th>Perangkat Daerah</th>
+          <th>Nomenklatur Jabatan Fungsional</th>
+          <th style="width: 105px; text-align: center;">Kategori</th>
+          <th style="width: 110px; text-align: center;">Jenjang</th>
+          <th style="width: 60px; text-align: right;">PNS</th>
+          <th style="width: 60px; text-align: right;">PPPK</th>
+          <th style="width: 65px; text-align: right;">PW</th>
+          <th style="width: 90px; text-align: right; background: rgba(0, 255, 170, 0.08); color: var(--accent);">Bezetting</th>
+          <th style="width: 85px; text-align: right; color: var(--accent-cyan);">ABK</th>
+          <th style="width: 75px; text-align: right;">Gap</th>
+          <th style="width: 120px; text-align: center;">Status Formasi</th>
+          <th style="min-width: 185px; text-align: center;">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="jf-table-body">
+        <tr>
+          <td colspan="13" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+            Memuat data bezetting dan gap analysis formasi jabatan fungsional...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH / SESUAIKAN FORMASI KEBUTUHAN ABK JF -->
+<div id="modal-tambah-abk-jf" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 99999; align-items: center; justify-content: center; padding: 1.5rem; box-sizing: border-box;">
+  <div class="modal-dialog" style="max-width: 580px; width: 95%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden; display: flex; flex-direction: column;">
+    <div class="modal-header" style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <div class="modal-title" style="font-size: 1.05rem; font-weight: 800; color: var(--text-main); display: flex; align-items: center; gap: 0.5rem;">
+          <span id="modal-abk-jf-title">➕ Input Formasi Kebutuhan ABK JF</span>
+        </div>
+        <div id="modal-abk-jf-sub" style="font-size: 0.775rem; color: var(--text-muted); margin-top: 0.2rem;">
+          Disimpan otomatis ke Spreadsheet Master <code>Data_Master_Kebutuhan_JF</code>
+        </div>
+      </div>
+      <button type="button" class="modal-close" onclick="closeTambahAbkModal()" style="background: transparent; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">&times;</button>
+    </div>
+
+    <!-- Form Input Formasi ABK -->
+    <form id="form-tambah-abk-jf" onsubmit="submitTambahAbk(event)">
+      <div class="modal-body" style="padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; max-height: 480px; overflow-y: auto;">
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Perangkat Daerah / Instansi <span style="color: var(--accent-rose);">*</span></label>
+          <select id="modal-abk-opd" class="form-control" required>
+            <option value="">-- Pilih Perangkat Daerah --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">Nomenklatur Jabatan Fungsional <span style="color: var(--accent-rose);">*</span></label>
+          <input type="text" id="modal-abk-jabatan" class="form-control" placeholder="Contoh: Analis SDM Aparatur, Dokter, Pranata Komputer..." required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 700;">Jenjang Jabatan</label>
+            <select id="modal-abk-jenjang" class="form-control">
+              <option value="Ahli Pertama">Ahli Pertama (S1/D4)</option>
+              <option value="Ahli Muda">Ahli Muda (S1/S2)</option>
+              <option value="Ahli Madya">Ahli Madya (S2/S3)</option>
+              <option value="Ahli Utama">Ahli Utama (S3)</option>
+              <option value="Terampil">Terampil (D3)</option>
+              <option value="Mahir">Mahir (D3)</option>
+              <option value="Penyelia">Penyelia (D3)</option>
+              <option value="Pemula">Pemula (SLTA/D1/D2)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" style="font-weight: 700;">Jumlah Kebutuhan ABK <span style="color: var(--accent-rose);">*</span></label>
+            <input type="number" id="modal-abk-kebutuhan" class="form-control" min="0" placeholder="Contoh: 5" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Sumber Analisis Formasi</label>
+          <input type="text" id="modal-abk-sumber" class="form-control" value="Anjab & ABK Pemkab Toba 2026" placeholder="Contoh: Anjab & ABK 2026, SK MenPAN-RB...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Keterangan / Lokasi Formasi</label>
+          <input type="text" id="modal-abk-keterangan" class="form-control" placeholder="Catatan tugas pokok atau unit kerja spesifik...">
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.5rem; background: var(--bg-subtle);">
+        <button type="button" class="btn btn-ghost" onclick="closeTambahAbkModal()">Batal</button>
+        <button type="submit" id="btn-submit-abk" class="btn btn-accent" style="padding: 0.5rem 1.25rem;">💾 Simpan Formasi ABK</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  var cachedJfData = null;
+  var debounceTimerJf = null;
+
+  function loadBezettingJFData() {
+    var filters = {
+      search: (document.getElementById('filter-jf-search') && document.getElementById('filter-jf-search').value) || '',
+      statusKebutuhan: (document.getElementById('filter-jf-status-kebutuhan') && document.getElementById('filter-jf-status-kebutuhan').value) || 'ALL',
+      kategori: (document.getElementById('filter-jf-kategori') && document.getElementById('filter-jf-kategori').value) || 'ALL',
+      jenjang: (document.getElementById('filter-jf-jenjang') && document.getElementById('filter-jf-jenjang').value) || 'ALL',
+      opd: (document.getElementById('filter-jf-opd') && document.getElementById('filter-jf-opd').value) || 'ALL'
+    };
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          cachedJfData = res;
+          window.cachedJfData = res;
+          renderBezettingJFTable(res);
+        })
+        .withFailureHandler(function(err) {
+          showToast('Gagal memuat bezetting JF: ' + err.toString(), 'error');
+        })
+        .getBezettingJFData(filters);
+    }
+  }
+
+  function onJfFilterChange() {
+    clearTimeout(debounceTimerJf);
+    debounceTimerJf = setTimeout(loadBezettingJFData, 250);
+  }
+
+  function resetJfFilter() {
+    var s = document.getElementById('filter-jf-search');
+    var sk = document.getElementById('filter-jf-status-kebutuhan');
+    var k = document.getElementById('filter-jf-kategori');
+    var j = document.getElementById('filter-jf-jenjang');
+    var o = document.getElementById('filter-jf-opd');
+    if (s) s.value = '';
+    if (sk) sk.value = 'ALL';
+    if (k) k.value = 'ALL';
+    if (j) j.value = 'ALL';
+    if (o) o.value = 'ALL';
+    loadBezettingJFData();
+  }
+
+  function renderBezettingJFTable(res) {
+    var tbody = document.getElementById('jf-table-body');
+    if (!res || !res.success) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;color:var(--accent-rose);padding:2rem;">Gagal memuat bezetting JF.</td></tr>';
+      return;
+    }
+
+    var stats = res.stats || {};
+    var elTotal = document.getElementById('kpi-jf-total');
+    var elKebutuhan = document.getElementById('kpi-jf-kebutuhan');
+    var elDefisit = document.getElementById('kpi-jf-defisit');
+    var elDefisitSub = document.getElementById('kpi-jf-defisit-sub');
+    var elSurplus = document.getElementById('kpi-jf-surplus');
+
+    if (elTotal) elTotal.innerText = Number(stats.totalJF || 0).toLocaleString('id-ID');
+    if (elKebutuhan) elKebutuhan.innerText = Number(stats.totalKebutuhan || 0).toLocaleString('id-ID');
+    if (elDefisit) elDefisit.innerText = Number(stats.totalDefisitPos || 0).toLocaleString('id-ID');
+    if (elDefisitSub) elDefisitSub.innerText = 'Total ' + Number(stats.totalGapPegawai || 0).toLocaleString('id-ID') + ' Pegawai Dibutuhkan';
+    if (elSurplus) elSurplus.innerText = Number(stats.totalSurplusPos || 0).toLocaleString('id-ID');
+
+    var rows = res.data || [];
+    if (rows.length === 0) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="13" style="text-align:center;padding:2rem;color:var(--text-dim);">Data Jabatan Fungsional tidak ditemukan untuk filter ini.</td></tr>';
+      return;
+    }
+
+    var html = '';
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var badgeKategori = r.jfCategory === 'KEAHLIAN'
+        ? '<span class="badge badge-info">🎓 Keahlian</span>'
+        : '<span class="badge badge-warning">🛠️ Keterampilan</span>';
+
+      var statusBadge = '<span class="badge badge-ghost" style="background:#f1f5f9;color:#64748b;">Belum Diatur</span>';
+      var gapText = '<span style="color:var(--text-dim);">-</span>';
+
+      if (r.statusKebutuhan === 'DEFISIT') {
+        statusBadge = '<span class="badge badge-danger">🔴 Kurang ' + Math.abs(r.gap) + '</span>';
+        gapText = '<span style="color:var(--accent-rose);font-weight:700;">' + r.gap + '</span>';
+      } else if (r.statusKebutuhan === 'IDEAL') {
+        statusBadge = '<span class="badge badge-success">🟢 Ideal</span>';
+        gapText = '<span style="color:var(--accent);font-weight:700;">0</span>';
+      } else if (r.statusKebutuhan === 'SURPLUS') {
+        statusBadge = '<span class="badge badge-warning">🟡 Lebih +' + r.gap + '</span>';
+        gapText = '<span style="color:var(--accent-amber);font-weight:700;">+' + r.gap + '</span>';
+      }
+
+      var kebutuhanDisplay = r.kebutuhan > 0 ? ('<b>' + r.kebutuhan + '</b>') : '<span style="color:var(--text-dim);">-</span>';
+
+      html += '<tr>' +
+        '<td>' + (i + 1) + '</td>' +
+        '<td><div style="font-weight:700;color:var(--text-main);font-size:0.825rem;">' + r.perangkatDaerah + '</div></td>' +
+        '<td><div style="font-weight:600;color:var(--text-main);">' + r.jabatanNama + '</div></td>' +
+        '<td style="text-align:center;">' + badgeKategori + '</td>' +
+        '<td style="text-align:center;"><span class="badge badge-purple">' + r.jfLevel + '</span></td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;">' + r.pns + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;">' + r.pppk + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;">' + r.p3k_pw + '</td>' +
+        '<td style="text-align:right;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;background:rgba(0,255,170,0.05);">' + r.totalBezetting + '</td>' +
+        '<td style="text-align:right;color:var(--accent-cyan);font-variant-numeric:tabular-nums;cursor:pointer;" onclick="openEntryAbkForRow(' + i + ')" title="Klik untuk input / ubah nilai ABK">' + kebutuhanDisplay + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;">' + gapText + '</td>' +
+        '<td style="text-align:center;">' + statusBadge + '</td>' +
+        '<td style="text-align:center;white-space:nowrap;">' +
+          '<div style="display:inline-flex;gap:0.35rem;align-items:center;justify-content:center;">' +
+            '<button type="button" class="btn btn-accent admin-only-btn" style="padding:0.28rem 0.6rem;font-size:0.75rem;font-weight:700;align-items:center;gap:0.25rem;background:#0284c7;color:#ffffff;border:1px solid #0369a1;border-radius:6px;box-shadow:0 2px 6px rgba(2,132,199,0.25);cursor:pointer;" onclick="openEntryAbkForRow(' + i + ')" title="Input / Ubah Formasi Kebutuhan ABK untuk jabatan ini">' +
+              '<span>➕ Entry ABK</span>' +
+            '</button>' +
+            '<button type="button" class="btn btn-ghost" style="padding:0.28rem 0.6rem;font-size:0.75rem;display:inline-flex;align-items:center;gap:0.25rem;border-radius:6px;" onclick="openBezettingDetailModal(\'jf\', ' + i + ')" title="Lihat daftar pegawai pemangku">' +
+              '<span>👥 Pegawai</span>' +
+            '</button>' +
+          '</div>' +
+        '</td>' +
+      '</tr>';
+    }
+
+    if (tbody) tbody.innerHTML = html;
+  }
+
+  function openEntryAbkForRow(idx) {
+    if (!document.body.classList.contains('is-admin')) {
+      if (typeof showToast === 'function') {
+        showToast('Aktifkan Mode Admin untuk mengisi atau mengubah formasi ABK.', 'info');
+      }
+      if (typeof openAdminLoginModal === 'function') {
+        openAdminLoginModal();
+      }
+      return;
+    }
+    if (!cachedJfData || !cachedJfData.data || !cachedJfData.data[idx]) return;
+    var r = cachedJfData.data[idx];
+
+    var titleEl = document.getElementById('modal-abk-jf-title');
+    if (titleEl) {
+      titleEl.innerHTML = '✏️ Entry Kebutuhan ABK: <span style="color:#0284c7;margin-left:0.25rem;">' + r.jabatanNama + '</span>';
+    }
+    var subEl = document.getElementById('modal-abk-jf-sub');
+    if (subEl) {
+      subEl.innerHTML = 'Perangkat Daerah: <b>' + r.perangkatDaerah + '</b> | Bezetting Riil: <b>' + r.totalBezetting + '</b> (PNS: ' + r.pns + ', PPPK: ' + r.pppk + ')';
+    }
+
+    openTambahAbkModal(r.perangkatDaerah, r.jabatanNama, r.jfLevel, (r.kebutuhan > 0 ? r.kebutuhan : ''), r.sumber || 'Anjab & ABK Pemkab Toba 2026', r.keterangan || '');
+  }
+
+  function onTambahAbkHeaderClick() {
+    if (!document.body.classList.contains('is-admin')) {
+      if (typeof showToast === 'function') {
+        showToast('Aktifkan Mode Admin untuk mengisi atau mengubah formasi ABK.', 'info');
+      }
+      if (typeof openAdminLoginModal === 'function') {
+        openAdminLoginModal();
+      }
+      return;
+    }
+    var titleEl = document.getElementById('modal-abk-jf-title');
+    if (titleEl) {
+      titleEl.innerHTML = '➕ Input Formasi Kebutuhan ABK JF';
+    }
+    var subEl = document.getElementById('modal-abk-jf-sub');
+    if (subEl) {
+      subEl.innerHTML = 'Disimpan otomatis ke Spreadsheet Master <code>Data_Master_Kebutuhan_JF</code>';
+    }
+    var filterOpd = document.getElementById('filter-jf-opd');
+    var defaultOpd = (filterOpd && filterOpd.value !== 'ALL') ? filterOpd.value : '';
+    openTambahAbkModal(defaultOpd, '', 'Ahli Pertama', '', 'Anjab & ABK Pemkab Toba 2026', '');
+  }
+
+  function openTambahAbkModal(defaultOpd, defaultJabatan, defaultJenjang, defaultKebutuhan, defaultSumber, defaultKet) {
+    if (!document.body.classList.contains('is-admin')) {
+      if (typeof showToast === 'function') {
+        showToast('Aktifkan Mode Admin untuk mengisi atau mengubah formasi ABK.', 'info');
+      }
+      if (typeof openAdminLoginModal === 'function') {
+        openAdminLoginModal();
+      }
+      return;
+    }
+    var modal = document.getElementById('modal-tambah-abk-jf');
+    var opdSelect = document.getElementById('modal-abk-opd');
+    var filterOpd = document.getElementById('filter-jf-opd');
+
+    // Salin opsi OPD jika modal select masih kosong
+    if (opdSelect && opdSelect.options.length <= 1 && filterOpd && filterOpd.options.length > 1) {
+      opdSelect.innerHTML = '<option value="">-- Pilih Perangkat Daerah --</option>';
+      for (var i = 1; i < filterOpd.options.length; i++) {
+        var opt = filterOpd.options[i];
+        if (opt.value && opt.value !== 'ALL') {
+          opdSelect.innerHTML += '<option value="' + opt.value + '">' + opt.text + '</option>';
+        }
+      }
+    }
+
+    if (defaultOpd && opdSelect) {
+      opdSelect.value = defaultOpd;
+      if (!opdSelect.value) {
+        for (var o = 0; o < opdSelect.options.length; o++) {
+          if (opdSelect.options[o].value.toUpperCase() === String(defaultOpd).toUpperCase()) {
+            opdSelect.selectedIndex = o;
+            break;
+          }
+        }
+        if (!opdSelect.value) {
+          var newOpt = document.createElement('option');
+          newOpt.value = defaultOpd;
+          newOpt.text = defaultOpd;
+          newOpt.selected = true;
+          opdSelect.appendChild(newOpt);
+        }
+      }
+    }
+
+    if (defaultJabatan) document.getElementById('modal-abk-jabatan').value = defaultJabatan;
+
+    if (defaultJenjang) {
+      var jnjSelect = document.getElementById('modal-abk-jenjang');
+      if (jnjSelect) {
+        jnjSelect.value = defaultJenjang;
+        if (!jnjSelect.value) {
+          for (var j = 0; j < jnjSelect.options.length; j++) {
+            if (String(defaultJenjang).toLowerCase().indexOf(jnjSelect.options[j].value.toLowerCase()) !== -1) {
+              jnjSelect.selectedIndex = j;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    var kebInput = document.getElementById('modal-abk-kebutuhan');
+    if (kebInput) {
+      kebInput.value = (defaultKebutuhan !== undefined && defaultKebutuhan !== null && defaultKebutuhan !== '') ? defaultKebutuhan : '';
+    }
+
+    var sumberInput = document.getElementById('modal-abk-sumber');
+    if (sumberInput) sumberInput.value = defaultSumber || 'Anjab & ABK Pemkab Toba 2026';
+
+    var ketInput = document.getElementById('modal-abk-keterangan');
+    if (ketInput) ketInput.value = defaultKet || '';
+
+    if (modal) {
+      if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+
+      setTimeout(function() {
+        if (defaultJabatan && kebInput) {
+          kebInput.focus();
+          kebInput.select();
+        } else {
+          var jabInput = document.getElementById('modal-abk-jabatan');
+          if (jabInput) jabInput.focus();
+        }
+      }, 150);
+    }
+  }
+
+  function closeTambahAbkModal() {
+    var modal = document.getElementById('modal-tambah-abk-jf');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active');
+    }
+  }
+
+  function submitTambahAbk(event) {
+    if (event && event.preventDefault) event.preventDefault();
+    if (!document.body.classList.contains('is-admin')) {
+      if (typeof showToast === 'function') {
+        showToast('Akses ditolak: Aktifkan Mode Admin terlebih dahulu.', 'warning');
+      }
+      return;
+    }
+
+    var opd = document.getElementById('modal-abk-opd').value;
+    var jabatan = document.getElementById('modal-abk-jabatan').value;
+    var jenjang = document.getElementById('modal-abk-jenjang').value;
+    var kebutuhan = document.getElementById('modal-abk-kebutuhan').value;
+    var sumber = document.getElementById('modal-abk-sumber').value;
+    var keterangan = document.getElementById('modal-abk-keterangan').value;
+
+    if (!opd || !jabatan || !kebutuhan) {
+      showToast('Mohon lengkapi Perangkat Daerah, Jabatan, dan Jumlah Kebutuhan.', 'warning');
+      return;
+    }
+
+    var btn = document.getElementById('btn-submit-abk');
+    var origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Menyimpan...';
+
+    var payload = {
+      opd: opd,
+      jabatan: jabatan,
+      jenjang: jenjang,
+      kebutuhan: parseInt(kebutuhan, 10) || 1,
+      sumber: sumber,
+      keterangan: keterangan
+    };
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = origText;
+          if (res && res.success) {
+            showToast(res.message || 'Formasi ABK JF berhasil disimpan!', 'success');
+            closeTambahAbkModal();
+            document.getElementById('form-tambah-abk-jf').reset();
+            loadBezettingJFData();
+          } else {
+            showToast('Gagal menyimpan: ' + ((res && res.error) || 'Unknown error'), 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = origText;
+          showToast('Error: ' + err.toString(), 'error');
+        })
+        .saveFormasiKebutuhanJF(payload);
+    }
+  }
+
+  function exportBezettingJfExcel() {
+    var btn = document.getElementById('btn-export-jf-excel');
+    var orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Menyiapkan...';
+    showToast('Menyusun berkas Excel bezetting & gap JF...', 'info');
+
+    var filters = {
+      search: (document.getElementById('filter-jf-search') && document.getElementById('filter-jf-search').value) || '',
+      statusKebutuhan: (document.getElementById('filter-jf-status-kebutuhan') && document.getElementById('filter-jf-status-kebutuhan').value) || 'ALL',
+      kategori: (document.getElementById('filter-jf-kategori') && document.getElementById('filter-jf-kategori').value) || 'ALL',
+      jenjang: (document.getElementById('filter-jf-jenjang') && document.getElementById('filter-jf-jenjang').value) || 'ALL',
+      opd: (document.getElementById('filter-jf-opd') && document.getElementById('filter-jf-opd').value) || 'ALL'
+    };
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = orig;
+          if (res && res.success && res.base64) {
+            downloadBase64File(res.base64, res.filename || 'Bezetting_Gap_Jabatan_Fungsional_Toba.xls', 'application/vnd.ms-excel');
+            showToast('Berkas Excel Bezetting & Gap JF berhasil diunduh!', 'success');
+          } else {
+            showToast('Gagal export: ' + ((res && res.error) || 'Unknown error'), 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = orig;
+          showToast('Error: ' + err.toString(), 'error');
+        })
+        .generateExportBezettingJFExcel(filters);
+    }
+  }
+
+  // Registrasi fungsi global window
+  window.loadBezettingJFData = loadBezettingJFData;
+  window.onJfFilterChange = onJfFilterChange;
+  window.resetJfFilter = resetJfFilter;
+  window.openTambahAbkModal = openTambahAbkModal;
+  window.closeTambahAbkModal = closeTambahAbkModal;
+  window.submitTambahAbk = submitTambahAbk;
+  window.exportBezettingJfExcel = exportBezettingJfExcel;
+</script>

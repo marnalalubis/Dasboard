@@ -1,0 +1,259 @@
+<!-- SUB-VIEW 3: REKAPITULASI PER PENDIDIKAN (44 OPD) -->
+<div id="subview-rekap-pendidikan" style="display: none;">
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <span class="kpi-title">Total Seluruh ASN</span>
+      <span class="kpi-value" id="rekap-pend-total-all">0</span>
+      <span class="kpi-subtext">44 OPD & Kecamatan se-Kabupaten Toba</span>
+    </div>
+    <div class="kpi-card purple">
+      <span class="kpi-title">Pascasarjana (S2 & S3)</span>
+      <span class="kpi-value" id="rekap-pend-sum-pasca">0</span>
+      <span class="kpi-subtext">Magister & Doktoral</span>
+    </div>
+    <div class="kpi-card cyan">
+      <span class="kpi-title">Sarjana & D-IV (S1)</span>
+      <span class="kpi-value" id="rekap-pend-sum-s1">0</span>
+      <span class="kpi-subtext">Strata 1 & Diploma IV</span>
+    </div>
+    <div class="kpi-card amber">
+      <span class="kpi-title">Diploma (D1, D2, D3)</span>
+      <span class="kpi-value" id="rekap-pend-sum-diploma">0</span>
+      <span class="kpi-subtext">Tenaga Terampil & Vokasi</span>
+    </div>
+    <div class="kpi-card rose">
+      <span class="kpi-title">SLTA & Sederajat</span>
+      <span class="kpi-value" id="rekap-pend-sum-slta">0</span>
+      <span class="kpi-subtext">SMA / SMK / SLTA</span>
+    </div>
+  </div>
+
+  <!-- Action & Export Bar Pendidikan -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <span style="font-size: 0.875rem; font-weight: 700; color: var(--text-main);">🎓 Matriks Sebaran Jenjang Pendidikan ASN </span>
+      <div style="display: inline-flex; align-items: center; gap: 0.35rem;">
+        <label style="font-size: 0.75rem; color: var(--text-muted);">Status ASN:</label>
+        <select id="rekap-pend-filter-asn" class="form-control" style="padding: 0.35rem 0.6rem; font-size: 0.775rem;" onchange="onPendidikanFilterAsnChange()">
+          <option value="ALL">Semua Status ASN (PNS + PPPK)</option>
+          <option value="PNS">Hanya PNS</option>
+          <option value="PPPK">Hanya PPPK Penuh Waktu</option>
+          <option value="PPPK_PARUH_WAKTU">Hanya PPPK Paruh Waktu</option>
+        </select>
+      </div>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <button class="btn btn-ghost" id="btn-export-pend-excel" onclick="exportRekapPendidikanExcel()">
+        📊 <span>Export Excel (.xls)</span>
+      </button>
+      <button class="btn btn-accent" id="btn-export-pend-pdf" onclick="exportRekapPendidikanPdf()">
+        📄 <span>Export PDF Resmi (Landscape)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabel Matriks Rekap Pendidikan -->
+  <div class="table-responsive">
+    <table class="custom-table" id="table-rekap-pendidikan">
+      <thead>
+        <tr>
+          <th style="width: 40px; vertical-align: middle;">No</th>
+          <th style="vertical-align: middle;">Nama Perangkat Daerah / Instansi</th>
+          <th style="text-align: right; color: #c084fc;">S-3</th>
+          <th style="text-align: right; color: #c084fc;">S-2</th>
+          <th style="text-align: right; color: var(--accent-cyan);">S-1 / D-IV</th>
+          <th style="text-align: right; color: var(--accent-amber);">D-III</th>
+          <th style="text-align: right; color: var(--accent-amber);">D-I / D-II</th>
+          <th style="text-align: right; color: #a3e635;">SLTA</th>
+          <th style="text-align: right; color: #a3e635;">SLTP</th>
+          <th style="text-align: right; color: #a3e635;">SD</th>
+          <th style="text-align: right; color: var(--text-muted);">Lainnya</th>
+          <th style="width: 80px; text-align: right; background: rgba(0, 255, 170, 0.1); color: var(--accent);">Total Pegawai</th>
+        </tr>
+      </thead>
+      <tbody id="rekap-pend-tbody">
+        <tr>
+          <td colspan="12" style="text-align: center; padding: 2rem; color: var(--text-dim);">
+            Menghitung sebaran kualifikasi pendidikan se-Kabupaten Toba...
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  /**
+   * Helper Client-Side Sanitizer:
+   * Mengunci tampilan nama OPD di browser agar selalu menampilkan nama resmi terbaru
+   * "Badan Perencanaan Pembangunan, Riset dan Inovasi Daerah"
+   */
+  function cleanRekapOpdName(raw) {
+    if (!raw) return '';
+    var text = String(raw).trim();
+    var upper = text.toUpperCase();
+
+    if (
+      upper.indexOf("PERENCANAAN PEMBANGUNAN") !== -1 ||
+      upper.indexOf("PENELITIAN DAN PENGEMBANGAN") !== -1 ||
+      upper.indexOf("PENELITIAN") !== -1 ||
+      upper.indexOf("RISET DAN INOVASI") !== -1 ||
+      upper.indexOf("BAPPEDA") !== -1 ||
+      upper.indexOf("BAPPERIDA") !== -1 ||
+      upper.indexOf("BAPELITBANGDA") !== -1
+    ) {
+      if (upper.indexOf("SEKRETARIAT DAERAH") === -1 && upper.indexOf("SETDA") === -1) {
+        return "Badan Perencanaan Pembangunan, Riset dan Inovasi Daerah";
+      }
+    }
+    return text;
+  }
+
+  function loadRekapPendidikanData() {
+    var filterAsn = document.getElementById('rekap-pend-filter-asn') ? document.getElementById('rekap-pend-filter-asn').value : 'ALL';
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          renderRekapPendidikanTable(res);
+        })
+        .withFailureHandler(function(err) {
+          showToast('Gagal memuat rekap pendidikan: ' + err.toString(), 'error');
+        })
+        .getRekapPendidikanData(filterAsn);
+    }
+  }
+
+  function onPendidikanFilterAsnChange() {
+    loadRekapPendidikanData();
+  }
+
+  function renderRekapPendidikanTable(res) {
+    if (!res || !res.success) {
+      document.getElementById('rekap-pend-tbody').innerHTML = '<tr><td colspan="12" style="text-align:center;color:var(--accent-rose);">Gagal memuat rekap sebaran pendidikan.</td></tr>';
+      return;
+    }
+
+    var t = res.totals || {};
+    document.getElementById('rekap-pend-total-all').innerText = Number(t.total_all || 0).toLocaleString('id-ID');
+    document.getElementById('rekap-pend-sum-pasca').innerText = Number((t.s3 || 0) + (t.s2 || 0)).toLocaleString('id-ID');
+    document.getElementById('rekap-pend-sum-s1').innerText = Number(t.s1 || 0).toLocaleString('id-ID');
+    document.getElementById('rekap-pend-sum-diploma').innerText = Number((t.d3 || 0) + (t.d1_d2 || 0)).toLocaleString('id-ID');
+    document.getElementById('rekap-pend-sum-slta').innerText = Number(t.slta || 0).toLocaleString('id-ID');
+
+    var rows = res.data || [];
+    var html = '';
+
+    for (var i = 0; i < rows.length; i++) {
+      var r = rows[i];
+      var displayName = cleanRekapOpdName(r.nama);
+      var isRsud = displayName === 'RSUD Porsea';
+      var rowStyle = isRsud ? 'style="background: rgba(6, 182, 212, 0.05);"' : '';
+
+      html += '<tr ' + rowStyle + '>' +
+        '<td>' + (r.no || '-') + '</td>' +
+        '<td style="font-weight:600;">' + displayName + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:#c084fc;">' + (r.s3 || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:#c084fc;">' + (r.s2 || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--accent-cyan);">' + (r.s1 || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--accent-amber);">' + (r.d3 || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--accent-amber);">' + (r.d1_d2 || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;">' + (r.slta || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;">' + (r.sltp || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;">' + (r.sd || '-') + '</td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--text-dim);">' + (r.lainnya || '-') + '</td>' +
+        '<td style="text-align:right;font-weight:700;color:var(--accent);font-variant-numeric:tabular-nums;background:rgba(0,255,170,0.05);">' + (r.jumlah || 0) + '</td>' +
+      '</tr>';
+    }
+
+    html += '<tr style="background:var(--bg-main);font-weight:800;border-top:2px solid var(--accent);">' +
+      '<td colspan="2" style="text-align:center;color:var(--accent);">TOTAL KESELURUHAN PEMKAB TOBA</td>' +
+      '<td style="text-align:right;color:#c084fc;">' + (t.s3 || 0) + '</td>' +
+      '<td style="text-align:right;color:#c084fc;">' + (t.s2 || 0) + '</td>' +
+      '<td style="text-align:right;color:var(--accent-cyan);">' + (t.s1 || 0) + '</td>' +
+      '<td style="text-align:right;color:var(--accent-amber);">' + (t.d3 || 0) + '</td>' +
+      '<td style="text-align:right;color:var(--accent-amber);">' + (t.d1_d2 || 0) + '</td>' +
+      '<td style="text-align:right;">' + (t.slta || 0) + '</td>' +
+      '<td style="text-align:right;">' + (t.sltp || 0) + '</td>' +
+      '<td style="text-align:right;">' + (t.sd || 0) + '</td>' +
+      '<td style="text-align:right;color:var(--text-dim);">' + (t.lainnya || 0) + '</td>' +
+      '<td style="text-align:right;color:var(--accent);font-size:1.05rem;">' + (t.total_all || 0) + '</td>' +
+    '</tr>';
+
+    document.getElementById('rekap-pend-tbody').innerHTML = html;
+  }
+
+  function exportRekapPendidikanPdf() {
+    var filterAsn = document.getElementById('rekap-pend-filter-asn') ? document.getElementById('rekap-pend-filter-asn').value : 'ALL';
+    var btn = document.getElementById('btn-export-pend-pdf');
+    var originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ <span>Menyiapkan PDF...</span>';
+    showToast('Membuat dokumen PDF Rekap Pendidikan resmi Pemkab Toba...', 'info');
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+          if (res && res.success && res.base64) {
+            downloadBase64File(res.base64, res.filename || 'Rekapitulasi_Pendidikan_ASN_Toba.pdf', 'application/pdf');
+            showToast('Dokumen PDF Pendidikan berhasil diunduh!', 'success');
+          } else {
+            showToast('Gagal generate PDF: ' + ((res && res.error) || 'Unknown error'), 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+          showToast('Error PDF: ' + err.toString(), 'error');
+        })
+        .generateRekapPendidikanPDF(filterAsn);
+    } else {
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        showToast('Mode Preview: Fitur export aktif di Google Apps Script.', 'info');
+      }, 800);
+    }
+  }
+
+  function exportRekapPendidikanExcel() {
+    var filterAsn = document.getElementById('rekap-pend-filter-asn') ? document.getElementById('rekap-pend-filter-asn').value : 'ALL';
+    var btn = document.getElementById('btn-export-pend-excel');
+    var originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ <span>Menyiapkan Excel...</span>';
+    showToast('Menyusun berkas Excel matriks pendidikan...', 'info');
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+          if (res && res.success && res.base64) {
+            downloadBase64File(res.base64, res.filename || 'Rekapitulasi_Pendidikan_ASN_Toba.xls', 'application/vnd.ms-excel');
+            showToast('Berkas Excel Pendidikan berhasil diunduh!', 'success');
+          } else {
+            showToast('Gagal generate Excel: ' + ((res && res.error) || 'Unknown error'), 'error');
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+          showToast('Error Excel: ' + err.toString(), 'error');
+        })
+        .generateRekapPendidikanExcel(filterAsn);
+    } else {
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        showToast('Mode Preview: Fitur export aktif di Google Apps Script.', 'info');
+      }, 800);
+    }
+  }
+
+  // Daftarkan fungsi ke window global
+  window.cleanRekapOpdName = cleanRekapOpdName;
+  window.loadRekapPendidikanData = loadRekapPendidikanData;
+  window.onPendidikanFilterAsnChange = onPendidikanFilterAsnChange;
+</script>

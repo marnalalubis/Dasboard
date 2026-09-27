@@ -1,0 +1,220 @@
+<!-- MENU 2: FORMASI & BEZETTING JABATAN ASN PEMKAB TOBA (MODULAR CONTAINER SHELL) -->
+<div id="view-struktur">
+  <!-- Sub-Nav Switcher (4 Subtab: Struktural, Fungsional, Pelaksana, & Pensiun BUP) -->
+  <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+    <button id="subtab-str-btn" class="btn btn-accent" onclick="switchStrukturView('struktural')">
+      🏛️ <span>Jabatan Struktural (Gap Analysis)</span>
+    </button>
+    <button id="subtab-jf-btn" class="btn btn-ghost" onclick="switchStrukturView('jf')">
+      🎓 <span>Bezetting & Kebutuhan JF (Anjab/ABK)</span>
+    </button>
+    <button id="subtab-jp-btn" class="btn btn-ghost" onclick="switchStrukturView('jp')">
+      ⚙️ <span>Bezetting & Kebutuhan JP (Pelaksana)</span>
+    </button>
+    <button id="subtab-pensiun-btn" class="btn btn-ghost" onclick="switchStrukturView('pensiun')">
+      ⏳ <span>Batas Usia Pensiun (BUP)</span>
+    </button>
+  </div>
+
+  <!-- Modul Sub-View 1: Gap Analysis Formasi Jabatan Struktural -->
+  <?!= include('subStrukturFormasi'); ?>
+
+  <!-- Modul Sub-View 2: Bezetting & Kebutuhan ABK Jabatan Fungsional (JF) -->
+  <?!= include('subStrukturJF'); ?>
+
+  <!-- Modul Sub-View 3: Bezetting & Kebutuhan ABK Jabatan Pelaksana (JP) -->
+  <?!= include('subStrukturJP'); ?>
+
+  <!-- Modul Sub-View 4: Informasi Batas Usia Pensiun (BUP) ASN -->
+  <?!= include('subPensiunBUP'); ?>
+
+  <!-- Shared Modal Dialog: Rincian Pegawai Pemangku Bezetting (Digunakan bersama oleh JF & JP) -->
+  <div id="modal-bezetting-pegawai" class="modal-overlay" style="display: none;">
+    <div class="modal-dialog" style="max-width: 850px;">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modal-bez-title">Daftar Pemangku Jabatan</div>
+          <div id="modal-bez-subtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">-</div>
+        </div>
+        <button type="button" class="modal-close" onclick="closeBezettingModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 420px; overflow-y: auto;">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;">No</th>
+              <th>Nama & NIP Pegawai</th>
+              <th>Golongan</th>
+              <th>Pendidikan</th>
+              <th>Status Pegawai</th>
+            </tr>
+          </thead>
+          <tbody id="modal-bez-tbody">
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 1.5rem; color: var(--text-dim);">
+                Memuat data pegawai pemangku...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeBezettingModal()">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var currentStrukturSubView = 'struktural';
+
+  function initMenuStruktur() {
+    loadStrukturOpdDropdowns();
+    switchStrukturView(currentStrukturSubView);
+  }
+
+  function switchStrukturView(view) {
+    currentStrukturSubView = view;
+    var isStr = view === 'struktural';
+    var isJf = view === 'jf';
+    var isJp = view === 'jp';
+    var isPensiun = view === 'pensiun';
+
+    var subStr = document.getElementById('subview-formasi-struktural');
+    var subJf = document.getElementById('subview-bezetting-jf');
+    var subJp = document.getElementById('subview-bezetting-jp');
+    var subPensiun = document.getElementById('subview-pensiun-bup');
+
+    if (subStr) subStr.style.display = isStr ? 'block' : 'none';
+    if (subJf) subJf.style.display = isJf ? 'block' : 'none';
+    if (subJp) subJp.style.display = isJp ? 'block' : 'none';
+    if (subPensiun) subPensiun.style.display = isPensiun ? 'block' : 'none';
+
+    var btnStr = document.getElementById('subtab-str-btn');
+    var btnJf = document.getElementById('subtab-jf-btn');
+    var btnJp = document.getElementById('subtab-jp-btn');
+    var btnPensiun = document.getElementById('subtab-pensiun-btn');
+
+    if (btnStr) btnStr.className = isStr ? 'btn btn-accent' : 'btn btn-ghost';
+    if (btnJf) btnJf.className = isJf ? 'btn btn-accent' : 'btn btn-ghost';
+    if (btnJp) btnJp.className = isJp ? 'btn btn-accent' : 'btn btn-ghost';
+    if (btnPensiun) btnPensiun.className = isPensiun ? 'btn btn-accent' : 'btn btn-ghost';
+
+    var subitems = {
+      'struktural': 'subitem-str',
+      'jf': 'subitem-jf',
+      'jp': 'subitem-jp',
+      'pensiun': 'subitem-pensiun'
+    };
+    for (var k in subitems) {
+      var el = document.getElementById(subitems[k]);
+      if (el) el.classList.toggle('active', k === view);
+    }
+
+    if (isStr && typeof loadStrukturData === 'function') {
+      loadStrukturData();
+    } else if (isJf && typeof loadBezettingJFData === 'function') {
+      loadBezettingJFData();
+    } else if (isJp && typeof loadBezettingPelaksanaData === 'function') {
+      loadBezettingPelaksanaData();
+    } else if (isPensiun && typeof loadPensiunData === 'function') {
+      loadPensiunData();
+    }
+  }
+
+  function loadStrukturOpdDropdowns() {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.satker) return;
+          var opdList = res.satker || [];
+          populateStrukturSelect('filter-str-opd', opdList, 'Semua Perangkat Daerah');
+          populateStrukturSelect('filter-jf-opd', opdList, 'Semua Perangkat Daerah');
+          populateStrukturSelect('filter-jp-opd', opdList, 'Semua Perangkat Daerah');
+          populateStrukturSelect('filter-pensiun-opd', opdList, 'Semua Perangkat Daerah');
+        })
+        .withFailureHandler(function(err) {
+          console.warn("OPD filter error: ", err);
+        })
+        .getFilterOptions();
+    }
+  }
+
+  function populateStrukturSelect(elemId, items, defaultText) {
+    var sel = document.getElementById(elemId);
+    if (!sel || !items) return;
+    var html = '<option value="">' + defaultText + '</option>';
+    for (var i = 0; i < items.length; i++) {
+      var itm = items[i];
+      if (itm) html += '<option value="' + itm + '">' + itm + '</option>';
+    }
+    sel.innerHTML = html;
+  }
+
+  function openBezettingDetailModal(type, index) {
+    var data = null;
+    if (type === 'jf' && window.cachedJfData && window.cachedJfData.data) {
+      data = window.cachedJfData.data[index];
+    } else if (type === 'jp' && window.cachedJpData && window.cachedJpData.data) {
+      data = window.cachedJpData.data[index];
+    }
+
+    if (!data) return;
+
+    var statusNote = data.kebutuhan > 0 ? (' | ABK: ' + data.kebutuhan + ' (' + data.statusLabel + ')') : '';
+    document.getElementById('modal-bez-title').innerText = data.jabatanNama;
+    document.getElementById('modal-bez-subtitle').innerText = data.perangkatDaerah + ' | Bezetting Riil: ' + data.totalBezetting + ' Pegawai (PNS: ' + data.pns + ', PPPK: ' + data.pppk + ', PW: ' + data.p3k_pw + ')' + statusNote;
+
+    var tbody = document.getElementById('modal-bez-tbody');
+    var list = data.pegawaiList || [];
+    var html = '';
+
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i];
+      var badgeClass = p.statusAsn === 'PNS' ? 'badge-success' : (p.statusAsn === 'PPPK' ? 'badge-warning' : 'badge-purple');
+      html += '<tr>' +
+        '<td>' + (i + 1) + '</td>' +
+        '<td>' +
+          '<div style="font-weight:700;color:var(--text-main);">' + p.nama + '</div>' +
+          '<div style="font-size:0.75rem;color:var(--text-muted);font-family:Consolas,monospace;">NIP: ' + p.nip + '</div>' +
+        '</td>' +
+        '<td><span class="badge badge-info">' + p.golongan + '</span></td>' +
+        '<td>' + p.pendidikan + '</td>' +
+        '<td><span class="badge ' + badgeClass + '">' + p.statusAsn + '</span></td>' +
+      '</tr>';
+    }
+
+    tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;padding:1.5rem;">Tidak ada rincian data pegawai.</td></tr>';
+    
+    var modal = document.getElementById('modal-bezetting-pegawai');
+    if (modal) {
+      modal.style.display = 'flex';
+      modal.classList.add('active');
+    }
+  }
+
+  function closeBezettingModal() {
+    var modal = document.getElementById('modal-bezetting-pegawai');
+    if (modal) {
+      modal.style.display = 'none';
+      modal.classList.remove('active');
+    }
+  }
+
+  function downloadBase64File(base64Data, fileName, mimeType) {
+    var linkSource = 'data:' + mimeType + ';base64,' + base64Data;
+    var downloadLink = document.createElement('a');
+    downloadLink.href = linkSource;
+    downloadLink.download = fileName;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  }
+
+  // Daftarkan fungsi ke window global untuk keandalan interaksi
+  window.initMenuStruktur = initMenuStruktur;
+  window.switchStrukturView = switchStrukturView;
+  window.openBezettingDetailModal = openBezettingDetailModal;
+  window.closeBezettingModal = closeBezettingModal;
+  window.downloadBase64File = downloadBase64File;
+</script>
